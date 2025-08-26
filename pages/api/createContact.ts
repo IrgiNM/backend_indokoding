@@ -37,14 +37,6 @@ export default async function handler(
 
       const usersRef = collection(db, "users");
 
-      // 🔍 Cek apakah username ada
-      const usernameQuery = query(usersRef, where("username", "==", username));
-      const usernameSnap = await getDocs(usernameQuery);
-
-      if (usernameSnap.empty) {
-        return res.status(404).json({ error: "Username not found" });
-      }
-
       // 🔍 Cek apakah email ada
       const emailQuery = query(usersRef, where("email", "==", email));
       const emailSnap = await getDocs(emailQuery);
@@ -56,7 +48,6 @@ export default async function handler(
       // 🔍 Cek apakah username & email ada di dokumen yang sama
       const userQuery = query(
         usersRef,
-        where("username", "==", username),
         where("email", "==", email)
       );
       const querySnapshot = await getDocs(userQuery);

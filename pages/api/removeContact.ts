@@ -2,6 +2,21 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { doc, deleteDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import NextCors from "nextjs-cors";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  arrayUnion,
+} from "firebase/firestore";
+
+interface ContactData {
+  id: string;
+  email: string;
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // 🔹 Aktifkan CORS
@@ -17,11 +32,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { id } = req.body;
+    const { id, email, }: ContactData = req.body;
 
-    if (!id) {
-      return res.status(400).json({ error: "ID Contact wajib ada" });
+    if (!id || !email) {
+      return res.status(400).json({ error: "All fields are required" });
     }
+
+    const usersRef = collection(db, "users");
+    
+    // 🔍 Cek apakah email ada
+    const emailQuery = query(usersRef, where("email", "==", email));
+    const emailSnap = await getDocs(emailQuery);
+    if (emailSnap.empty) {
+      return res.status(404).json({ error: "Email not found" });
+    }
+    // 🔍 Cek apakah username & email ada di dokumen yang sama
+    const userQuery = query(
+      usersRef,
+      where("email", "==", email)
+    );
+    const querySnapshot = await getDocs(userQuery);
+
+    // ✅ Ambil user pertama yang cocok
+    const userDoc = querySnapshot.docs[0];
+    const userData = userDoc.data();
+
+    // Update total_contact
+    const newTotalContact = (userData.total_contact || 0) - 1;
+    await updateDoc(userDoc.ref, { total_contact: newTotalContact });
 
     // Referensi ke dokumen user
     const userRef = doc(db, "contacts", id);
