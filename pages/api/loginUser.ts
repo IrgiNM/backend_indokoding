@@ -35,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Query berdasarkan username
     const q1 = query(
-      collection(db, "users"),
+      collection(db, "users"),  
       where("username", "==", username),
       where("role", "==", role)
     );
