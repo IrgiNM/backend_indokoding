@@ -38,7 +38,7 @@ export default async function handler(
       const usersRef = collection(db, "users");
 
       // 🔍 Cek apakah email ada
-      const emailQuery = query(usersRef, where("email", "==", email));
+      const emailQuery = query(usersRef, where("email", "==", email), where("role", "==", "guest"));
       const emailSnap = await getDocs(emailQuery);
 
       if (emailSnap.empty) {
