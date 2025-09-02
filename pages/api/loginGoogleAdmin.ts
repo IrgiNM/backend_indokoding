@@ -33,13 +33,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: "Username, email, dan role wajib diisi" });
     }
 
-    // Query berdasarkan username
-    const q1 = query(
-      collection(db, "users"),
-      where("username", "==", username),
-      where("role", "==", role)
-    );
-
     // Query berdasarkan email
     const q2 = query(
       collection(db, "users"),
@@ -47,9 +40,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where("role", "==", role)
     );
 
-    const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+    const [snap1] = await Promise.all([getDocs(q2)]);
 
-    let userDoc = snap1.docs[0] || snap2.docs[0];
+    let userDoc = snap1.docs[0];
     if (!userDoc) {
       return res.status(401).json({ error: "Username/email atau role tidak ditemukan" });
     }
