@@ -1,6 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { db } from "../../lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -44,19 +53,27 @@ export default async function handler(
           .json({ error: "Username dan email wajib diisi" });
       }
 
-      const docRef = await addDoc(collection(db, "users"), {
-        username,
-        email,
-        role,
-        total_contact: total_contact || 0,
-        total_join: total_join || 0,
-        total_career: total_career || 0,
-        createdAt: serverTimestamp()
-      });
+      const qEmail = query(collection(db, "users"), where("email", "==", email));
+      const snapEmail = await getDocs(qEmail);
+
+      if (!snapEmail.empty) {
+        return res.status(400).json({ error: "Email sudah dipakai akun lain" });
+      }
+      
+      if (snapEmail.empty) {
+        const docRef = await addDoc(collection(db, "users"), {
+          username,
+          email,
+          role,
+          total_contact: total_contact || 0,
+          total_join: total_join || 0,
+          total_career: total_career || 0,
+          createdAt: serverTimestamp()
+        });
+      }
 
       const token = jwt.sign( 
-        {                   
-          id: docRef.id,
+        {
           username,         
           email,
           role,       
@@ -68,8 +85,7 @@ export default async function handler(
       return res
         .status(200)
         .json({ 
-          message: "User berhasil disimpan", 
-          id: docRef.id,
+          message: "User berhasil disimpan",
           username,         
           email,
           role,
