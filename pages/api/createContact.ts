@@ -45,21 +45,8 @@ export default async function handler(
         return res.status(404).json({ error: "Email not found" });
       }
 
-      // 🔍 Cek apakah username & email ada di dokumen yang sama
-      const userQuery = query(
-        usersRef,
-        where("email", "==", email)
-      );
-      const querySnapshot = await getDocs(userQuery);
-
-      if (querySnapshot.empty) {
-        return res
-          .status(400)
-          .json({ error: "Username and email do not match" });
-      }
-
       // ✅ Ambil user pertama yang cocok
-      const userDoc = querySnapshot.docs[0];
+      const userDoc = emailSnap.docs[0];
       const userData = userDoc.data();
 
       // Update total_contact
