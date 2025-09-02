@@ -53,7 +53,7 @@ export default async function handler(
           .json({ error: "Username dan email wajib diisi" });
       }
 
-      const qEmail = query(collection(db, "users"), where("email", "==", email));
+      const qEmail = query(collection(db, "users"), where("email", "==", email), where("role", "==", 'guest'));
       const snapEmail = await getDocs(qEmail);
 
       // if (!snapEmail.empty) {
